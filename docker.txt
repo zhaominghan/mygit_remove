@@ -1,0 +1,105 @@
+一.容器
+1.docker,镜像，容器关系。
+	什么是docker?
+		应用开源的容器管理工具，基于LXC内核虚拟化的技术实现。docker是将应用程序以及依赖包打包到可移植的容器中，可发布到任意linux发行版的docker引擎中，然后独立的运行；go语言开发。
+	2.docker 的架构：
+		采用C/S架构。客户端提供客户很多命令，如创建，运行等等。服务端：装完docker后，会有个demon守护进程作为服务端，接受客户端的命令（）
+		docker = LXC+AUFS（联合文件系统）
+	3.docker的优势：
+		轻量级化：快速迭代的情况下，轻量级的容器对快速构建，打包和发布等流程，提高工作效率
+		可移植性：容器可以移动任意到各种docker主机上
+		标准化：容器保证了所有配置和依赖始终不变
+		隔离性和安全：容器之前进程是相互隔离的，通过namespce命名空间不同，使互不干扰
+	4.虚拟机和容器的区别
+		启动时间：docker启动时间是秒级，虚拟机是分钟级
+		轻量化：docker是以M为单位，虚拟机是G为单位
+		性能：docker共享宿主机内核，占用资源少，没有Hypevisior层开销，性能接进物理机。虚拟机开销大，因为会降低性能
+		安全性：docker由于共享内核，只是进程隔离，因此隔离性和稳定性不如虚拟机，docker具有一定的权限访问内核，所以存在安全隐患
+		使用要求；虚拟机是基于硬件的完全的虚拟化，需要CPU对虚拟化技术的支持。容器共享物理机内核，所以不用考虑CPU是否支持虚拟化技术
+	5.docker的应用场景
+		应用打包和自动化
+		自动化测试和持续集成/部署
+		部署与弹性扩展
+		微服务
+	6.镜像：没有Linux内核的精简的操作系统
+	docker 利用不同的镜像创建不同的容器。镜像与容器的关系：就似程序和进程的关系
+容器技术：一个进程以及他的子进程给他建立一个容器，让他在容器中运行，使与其他进程独立出来,其环境也就独立出来了。降低了软件开发的工作力，增加了运维的工作量
+docker:是管理容器的工具。利用各种镜像开创不同的容器。
+docker 需要容器编排工具，多进程可能存在依赖，所以需要逻辑来顺序处理或者其他操作。
+docker镜像含有启动容器所需要的文件系统和内容
+	镜像采用分层构建模式，最底层是bootfs，次之rootfs bootfs-系统引导的文件系统，包括bootloader和kernel,容器启动后会被卸载以节约内存。rootfs-docker 容器的根目录的文件系统。镜像的最上层可以读写，其他下面几层都只读 当更改读写层的文件时候，上层的文件为隐藏下层的相同文件
+
+docker ：如何实现批量建立容器？
+容器一般不会在本地存储数据，而是挂载在外部物理机上（脱离容器）所以容器有生命周期，进程结束，容器消亡，而数据是挂载在物理机上的，所以没影响。
+使用的镜像需要放置本地存储，镜像可以来源于自定义镜像和镜像仓库下载
+2.docker
+ 站点：容纳容器镜像的站点，dockerhub.com  需要什么镜像，在站点（镜像库）中搜索。如nginx,tomcat等
+ 分类：docker cc (社区版)和docker ee （企业版）
+	docker 的镜像是分层构建的
+ 下载docker：https://download.docker.com/
+ docker程序环境：
+ 环境配置文件：
+	 /etc/sysconfig/docker-network
+	 /etc/sysconfig/docker-storage
+	 /etc/sysconfig/docker
+	 Unit File：
+	 /usr/lib/systemd/system/docker.service
+	 Docker Registry配置文件：
+	 /etc/containers/registries.conf
+	 
+	 docker-ce:
+	 配置文件：/etc/docker/daemon.json
+ docker 镜像加速：
+	docker cn
+	阿里云加速器
+	中国科技大学加速器
+ 加速方法：安装docker后，更改配置文件（"registry-mirrors": ["https://registry.docker-cn.com"]），启动docker服务
+ 
+ docker操作：
+   docker search  docker image search(image 表示操作对象为镜像)搜索库上的镜像 如： docker search nginx
+   docker pull   docker image pull下载镜像到本地
+   docker push   上传到hub库上 （需要账号），不指定镜像名，默认全部推送
+   docker images  查看当前本地所有镜像清单
+   docker export 容器名 > tar包 ，导出生成tar包
+   docker image rm 删除镜像 docker rmi 删除镜像 docker rm 删除容器
+   docker insprct 镜像名  可以查看镜像的默认设置（尤其注意'cmd'下面的参数 ）
+		制作镜像：
+			基于容器制作：在容器中完成操作后制作 docker build
+			基于镜像制作：编辑一个Dockerfile，而后根据此文件制作 docker commit
+	Hub库的登陆和注销（终端操作）
+	docker login 在终端登陆HUB库
+	docker logout 退出HUB库
+	导入/导出镜像：
+		docker save [OPTIONS] IMAGE [IMAGE...]  将镜像导出为tar包
+		docker load [OPTIONS] 从tar包中导入镜像 
+   
+   docker run 创建并运行容器 docker run --name 容器名 -d 镜像名 （启动容器，会从本地搜索该镜像，若没有，默认自动在Hub库上下载）
+   docker create 创建容器
+   docker start   启动容器
+   docker kill/stop 停止容器
+   docker restart  重启容器
+   docker atach
+   docker pause/unpause  暂停/继续容器
+   docker rm  删除容器
+   docker ps  查看容器进程状态
+   docker container ls  容器清单
+   docker exec -it 容器名 /bin/bash 在容器中执行bash命令
+   docker logs 容器名 查看容器的日志，一般用于调试容器
+   注意：
+	运行的容器内部必须有一个工作前台的运行的进程；（容器只有一个程序，必须在前台）
+	docker的容器的通常也是仅为运行一个程序；
+	要想在容器内运行多个程序，一般需要提供一个管控程序，例如supervised。
+3.制作镜像：
+	基于容器
+	 条件：容器在运行中，不能退出，可以新开一个窗口，就会在终端界面 
+	 格式；docker commit -p 容器名 仓库：标签（p表示暂停的意思，仓库和标签可以不加，后续加上docker tag ID号 仓库：标签）
+		-a 跟作者信息
+		-c 跟启动镜像时的默认设置，如运行到前台设置，执行exec 默认使用bin/bash 格式 -c 'CMD ["/bin/bash","-f"]'  -f  表示前台
+		-p 指定格当前的容器，制作镜像
+	基于镜像制作：
+4.搭建私有镜像仓库
+
+5.swarm容器集群管理系统
+	
+
+		
